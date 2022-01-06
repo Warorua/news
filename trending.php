@@ -40,7 +40,7 @@ if ($err) {
   <div class="card-body">
     <h5 class="card-title">'.$data['articles'][$x]['source']['title'].'</h5>
     <p class="card-text">'.$data['articles'][$x]['title'].'</p>
-    <a href="single_trending.php?q='.$data['articles'][$x]['link'].'" target="_blank" class="btn btn-primary">Read More</a>
+    <a href="single_trending.php?q='.$data['articles'][$x]['link'].'&source='.$data['articles'][$x]['source']['href'].'" target="_blank" class="btn btn-primary">Read More</a>
     <a href="'.$data['articles'][$x]['link'].'" target="_blank">original Link</a>
   </div>
   <div class="card-footer text-muted">

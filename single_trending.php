@@ -17,6 +17,7 @@ include 'includes/navbar.php';
   <div class="container">   
   <?php
 $item = $_GET['q'];
+$source = $_GET['source'];
 $curl = curl_init();
 
 curl_setopt_array($curl, [
@@ -102,7 +103,7 @@ echo '
 <h5 class="text-primary">Author:  <?php echo $data['article']['authors'][0] ?></h5>
 </div>
 <div class="col-md-6">
-<h5 class="text-primary"> Source: <?php echo $data['article']['source_url'] ?></h5>
+<h5 class="text-primary"> Source: <?php echo $source ?></h5>
 </div>
 <div class="col-md-12">
 <?php echo $data['article']['published'] ?>
