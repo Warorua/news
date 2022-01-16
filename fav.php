@@ -22,7 +22,7 @@ echo "Photo downloaded and saved successfully!";
 echo '<img src="https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://www.stackoverflow.com&size=50" />';
 
 */
-$date = gmdate("D, d M Y H:i:s T");
+$date = date("D, d M Y H:i:s T");
 $start = strtotime($date);
 $end = strtotime("Tue, 04 Jan 2022 21:08:49 GMT");
 $hours = intval(($start - $end)/60);
