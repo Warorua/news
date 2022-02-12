@@ -214,8 +214,8 @@ $code='prav_'.substr(str_shuffle($set), 0, 12);
 //Insertion process
 $time = date("D, d M Y H:i:s");
 $conn = $pdo->open();
-$stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM news WHERE published=:published AND title=:title");
-$stmt->execute(['published'=>$published, 'title'=>$title]);
+$stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM news WHERE published=:published AND title=:title AND deep_link=:deep_link");
+$stmt->execute(['published'=>$published, 'title'=>$title, 'deep_link'=>$h_link]);
 
 $ct = $stmt->fetch();
 
