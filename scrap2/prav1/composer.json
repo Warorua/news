@@ -1,0 +1,8 @@
+{
+    "require": {
+        "masterminds/html5": "^2.7",
+        "fabpot/goutte": "^4.0"
+    },
+ "minimum-stability": "dev",
+"prefer-stable": true
+}

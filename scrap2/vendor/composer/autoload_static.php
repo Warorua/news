@@ -6,6 +6,30 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit29cc5fd8001417376c07400867f93d69
 {
+    public static $prefixLengthsPsr4 = array (
+        'M' => 
+        array (
+            'Masterminds\\' => 12,
+        ),
+    );
+
+    public static $prefixDirsPsr4 = array (
+        'Masterminds\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/masterminds/html5/src',
+        ),
+    );
+
+    public static $prefixesPsr0 = array (
+        'F' => 
+        array (
+            'ForceUTF8\\' => 
+            array (
+                0 => __DIR__ . '/..' . '/neitanod/forceutf8/src',
+            ),
+        ),
+    );
+
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'simplehtmldom\\Debug' => __DIR__ . '/..' . '/simplehtmldom/simplehtmldom/Debug.php',
@@ -17,6 +41,9 @@ class ComposerStaticInit29cc5fd8001417376c07400867f93d69
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
+            $loader->prefixLengthsPsr4 = ComposerStaticInit29cc5fd8001417376c07400867f93d69::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit29cc5fd8001417376c07400867f93d69::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit29cc5fd8001417376c07400867f93d69::$prefixesPsr0;
             $loader->classMap = ComposerStaticInit29cc5fd8001417376c07400867f93d69::$classMap;
 
         }, null, ClassLoader::class);

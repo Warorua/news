@@ -1,20 +1,24 @@
 
 <?php
+set_time_limit(100000000000);
 include 'includes/session.php';
 require '../vendor/autoload.php';
+$search_from = $_POST['url'];
+$cat_fetch = $_POST['cat'];
 $httpClient = new \simplehtmldom\HtmlWeb();
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ///////////////         HOME PAGE TRENDING            ///////////////////////////////
-$link = 'https://www.jumia.co.ke/womens-jeans/';
+$link = $search_from;
 $response = $httpClient->load($link);
 $output = '';
-
+$output2 = '';
 //$nm = $response->find('.crs-w div.crs div.itm article.prd a.core');
 //$slink = "https://www.jumia.co.ke".$nm[0]->href;
 
 $nm = $response->find('.prd a.core');
-$slink = "https://www.jumia.co.ke".$nm[0]->href;
+foreach($nm as $rrw){
+$slink = "https://www.jumia.co.ke".$rrw->href;
 $resp = $httpClient->load($slink);
 
 //Name
@@ -40,7 +44,7 @@ $output .= $slug.'<br/>';
 
 //category_id
 $output .= '<h2>Cat</h2>';
-$category_id = 156;
+$category_id = $cat_fetch;
 $output .= $category_id.'<br/>';
 
 //Description
@@ -54,6 +58,7 @@ $output .= '<h2>Price</h2>';
 $nme3 = $resp->find('.col12 div.row div.col10 div.-phs div.-hr div span.-b');
 $pr = $nme3[0]->innertext;
 $price = filter_var($pr, FILTER_SANITIZE_NUMBER_INT);
+$price_1 = $price;
 $output .= $price.'<br/>';
 
 //Photo url
@@ -129,7 +134,7 @@ $output .= $prod_qty.'<br/>';
 
 //Barcode
 $output .= '<h2>Barcode</h2>';
-$barcode = 0000000000000000000000;
+$barcode = '0000000000000000000000';
 $output .= $barcode.'<br/>';
 
 
@@ -277,6 +282,9 @@ else{
 $length = '';
 $height = '';
 $shipping_add = '';
+$female_skirts = '';
+$female_skirts_id = '';
+$female_pants = '';
 
 //More Description
 $output .= '<h2>More Description / What is in the box</h2>';
@@ -303,18 +311,22 @@ foreach($nme12_1 as $nm13){
 $output .= '<h2>Material</h2>';
 $nme14 = $resp->find('.row div.col12 section.card div.row article.col8 div.card-b ul.-pvs li.-pvxs span.-b');
 foreach($nme14 as $nm14 => $value){
-    $output .= $value->plaintext.'--'.$nm14.'<br/>';
+    //$output .= $value->plaintext.'--'.$nm14.'<br/>';
     $nm14_r = $value->plaintext;
     if("Main Material" == $nm14_r){
     $nme14_f = $resp->find('.row div.col12 section.card div.row article.col8 div.card-b ul.-pvs li.-pvxs');
     $nme14_d = $nme14_f[$nm14]->plaintext;
-      $material = $nme14_d;
+    $nme14_f = str_replace("Main Material: ", '', $nme14_d);
+      $material = $nme14_f;
+         $output .= $material.'<br/>';
     }
     else{
-        $material = "";
+        $material = '';
     }
+
 }
-$output .= $material.'<br/>';
+//Product status
+$product_status = 1;
 /////////////////////////////////////SELLER INFORMATION//////////////////////////////////////////
 //Supplier
 $output .= '<h2>Supplier</h2>';
@@ -323,7 +335,12 @@ $output .= $supplier.'<br/>';
 
 //Supplier ID
 $output .= '<h2>Supplier ID</h2>';
-$supp_id = $nme10_dc['products'][0]['sellerId'];
+if(isset($nme10_dc['products'][0]['sellerId'])){
+    $supp_id = $nme10_dc['products'][0]['sellerId'];
+}
+else{
+    $supp_id = 'VEND-'.sha1($supplier);
+}
 $output .= $supp_id.'<br/>';
 
 //date View
@@ -337,6 +354,141 @@ $nme11 = $resp->find('.col4 div.-pts section.card a');
 $seller_url = $nme11[0]->href;
 $output .= 'https://www.jumia.co.ke/seller'.$seller_url.'profile/<br/>';
 
+//Seller SKU
+$output .= '<h2>Seller SKU</h2>';
+$nme15 = date("Y");
+$seller_sku = 'TS/JM/'.$supp_id.'/'.$nme15;
+$output .= $seller_sku.'<br/>';
+
+//Supp Mail
+$output .= '<h2>Supp eMail</h2>';
+$nme16 = strtolower(str_replace(' ', '', $supplier));
+$supp_email = $nme16.'@vendor.tsavo.store';
+$output .= $supp_email.'<br/>';
+
+//Shipping Origin
+$output .= '<h2>Shipping Origin</h2>';
+$nme17 = $resp->find('.col10 div.-df div.-fs0 a.tag');
+if(isset($nme17[0])){
+if($nme17[0]->plaintext == "Shipped from abroad"){
+    $ship_orig = 'Abroad';
+}
+else{
+    $ship_orig = "Kenya";
+}
+}
+else{
+    $ship_orig = "Kenya";
+}
+$output .= $ship_orig.'<br/>';
+//seller account details
+$password = password_hash($nme16.'2021', PASSWORD_DEFAULT);
+$shopname = $nme16;
+		$fullname = $supplier;
+		$email = $supp_email;
+		$address = $ship_orig;
+		$terms = 1;
+		$contact_info = '0700000000';
+		$created_on = date("Y/m/d | h:i:sa");
+		$seller_id = $supp_id;
+		$type = 2;
+		$crpt = time();
+		$crpto = $crpt + $crpt;
+		$shop_id = $seller_sku;
+
+/////////////////////////////CREATE VENDOR ACCOUNT////////////////////////////////
+$conn = $pdo->open();
+$stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM supplier WHERE supp_slug=:supp_slug");
+$stmt->execute(['supp_slug'=>$seller_id]);
+$supp_count = $stmt->fetch();
+if($supp_count['numrows'] < 1){
+    $stmt = $conn->prepare("INSERT INTO supplier (email, supp_contact, address, field1, supp_name, name, type, created_on, supp_slug, terms_conditions, shop_id) VALUES (:email, :supp_contact, :address, :field1, :supp_name, :name, :type, :created_on, :supp_slug, :terms_conditions, :shop_id)");
+    $stmt->execute(['email'=>$email, 'supp_contact'=>$contact_info, 'address'=>$address, 'field1'=>$password, 'supp_name'=>$fullname, 'name'=>$shopname, 'type'=>$type, 'created_on'=>$created_on, 'supp_slug'=>$seller_id, 'terms_conditions'=>$terms, 'shop_id'=>$shop_id]);
+    $output2 .= '<div class="alert alert-primary" role="alert">Vendor Account Created Successfully</div><br/>';
+}
+else{
+    $output2 .= '<div class="alert alert-danger" role="alert">Supplier Already in the Database</div><br/>';
+}
+
+/////////////////INSERT PRODUCTS INTO THE DATABASE///////////////////////////////
+$conn = $pdo->open();
+$stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM products WHERE slug=:slug");
+$stmt->execute(['slug'=>$slug]);
+$prod_count = $stmt->fetch();
+if($prod_count['numrows'] < 1){
+
+    // Download image, rename it and put it into folder
+$url = $photo_url;
+$set='1234567890';
+//$code=substr(str_shuffle($set), 0, 8);
+$code =time();
+$gen = $nme16.$code;
+$filee = basename($url);
+$ext = pathinfo($filee, PATHINFO_EXTENSION);
+$img = $gen.".jpg";
+$path = '../../../tsavo/tsavo_vendor/images/'.$img; 
+file_put_contents($path, file_get_contents($url));
+$filename = $img;  
+
+$method = "Scrap";
+
+    $stmt = $conn->prepare("INSERT INTO products (more_desc, method, category_id, name, description, slug, price, photo, date_view, was, brand, weight, width, category, price_1, price_2, prod_qty, supplier, supp_id, length, height, supp_cont, p_off, material, seller_sku, supp_email, ship_orig, product_status, male_shoes, male_shoes_id, male_pants, male_pants_id, male_shirts, male_shirts_id, female_shoes, female_shoes_id, female_skirts, female_skirts_id, female_pants, female_pants_id, field1, field4, field5, field6, categ, field2, field7, field8) VALUES (:more_desc, :method, :category_id, :name, :description, :slug, :price, :photo, :date_view, :was, :brand, :weight, :width, :category, :price_1, :price_2, :prod_qty, :supplier, :supp_id, :length, :height, :supp_cont, :p_off, :material, :seller_sku, :supp_email, :ship_orig, :product_status, :male_shoes, :male_shoes_id, :male_pants, :male_pants_id, :male_shirts, :male_shirts_id, :female_shoes, :female_shoes_id, :female_skirts, :female_skirts_id, :female_pants, :female_pants_id, :field1, :field4, :field5, :field6, :categ, :field2, :field7, :field8)");
+    $stmt->execute([
+        'more_desc'=>$more_desc,
+        'method'=>$method,
+        'category_id'=>$category_id,
+        'name'=>$name,
+        'description'=>$description,
+        'slug'=>$slug,
+        'price'=>$price,
+         'photo'=>$filename,
+          'date_view'=>$date_view,
+           'was'=>$was,
+            'brand'=>$brand,
+             'weight'=>$weight,
+              'width'=>$width,
+               'category'=>$category_id,
+                'price_1'=>$price_1,
+                 'price_2'=>$price_2,
+                  'prod_qty'=>$prod_qty,
+                   'supplier'=>$supplier,
+                    'supp_id'=>$seller_sku,
+                     'length'=>$length,
+                      'height'=>$height,
+                       'supp_cont'=>$contact_info,
+                        'p_off'=>$p_off,
+                         'material'=>$material,
+                          'seller_sku'=>$seller_sku,
+                           'supp_email'=>$supp_email,
+                            'ship_orig'=>$ship_orig,
+                             'product_status'=>$product_status,
+                              'male_shoes'=>$male_shoes,
+                               'male_shoes_id'=>$male_shoes_id,
+                               'male_pants'=>$male_pants,
+                                'male_pants_id'=>$male_pants_id,
+                                'male_shirts'=>$male_shirts,
+                                 'male_shirts_id'=>$male_shirts_id,
+                                  'female_shoes'=>$female_shoes,
+                                   'female_shoes_id'=>$female_shoes_id,
+                                    'female_skirts'=>$female_skirts,
+                                     'female_skirts_id'=>$female_skirts_id,
+                                      'female_pants'=>$female_pants,
+                                       'female_pants_id'=>$female_pants_id,
+                                        'field1'=>$field1,
+                                         'field4'=>$field4,
+                                          'field5'=>$field5,
+                                           'field6'=>$field6,
+                                            'categ'=>$categ,
+                                             'field2'=>$field2,
+                                              'field7'=>$field7,
+                                               'field8'=>$field8
+                                            ]);
+   $output2 .= '<div class="alert alert-primary" role="alert">Product Inserted into the Database successfully</div><br/>';
+}
+else{
+    $output2 .= '<div class="alert alert-danger" role="alert">Product Already in the Database</div><br/>';
+}
+}
 
 /*
 foreach($nm as $nm_1){
@@ -354,7 +506,9 @@ $output .= "
             });
             </script>
 ";
- echo $output;
+$output3 .= '<div class="alert alert-primary" role="alert">Operation finished successfully</div><br/>';
+
+ echo $output3;
 
 ?>
 

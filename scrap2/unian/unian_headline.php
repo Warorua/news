@@ -1,4 +1,6 @@
 <?php
+//header('Content-Type: text/html; charset=utf-8');
+
 include 'includes/session.php';
 require '../vendor/autoload.php';
 $httpClient = new \simplehtmldom\HtmlWeb();
@@ -111,8 +113,9 @@ $code=substr(str_shuffle($set), 0, 12);
 //Insertion process
 $time = date("D, d M Y H:i:s");
 $conn = $pdo->open();
-$stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM news WHERE published=:published");
-$stmt->execute(['published'=>$published]);
+$stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM news WHERE published=:published AND title=:title");
+$stmt->execute(['published'=>$published, 'title'=>$title]);
+
 $ct = $stmt->fetch();
 if($ct['numrows'] < 1){
   // Download image, rename it and put it into folder
@@ -125,11 +128,16 @@ $path = '../images/'.$img;
 file_put_contents($path, file_get_contents($url));
 $filename = $img;  
 //insert into database
-  $stmt = $conn->prepare("INSERT INTO news (source, deep_link, title, published, author, article, tag_1, tag_2, tag_3, photo, photo_url, p_grapher, category, time, code) VALUES (:source, :deep_link, :title, :published, :author, :article, :tag_1, :tag_2, :tag_3, :photo, :photo_url, :p_grapher, :category, :time, :code)");
-  $stmt->execute(['source'=>"Unian.ua", 'deep_link'=>$f_href, 'title'=>$title, 'published'=>$published, 'author'=>$p_author, 'article'=>$ar_full, 'tag_1'=>$tag1, 'tag_2'=>$tag2, 'tag_3'=>$tag3, 'photo'=>$filename, 'photo_url'=>$image, 'p_grapher'=>"None", 'category'=>$p_cat, 'time'=>$time, 'code'=>$code]);
+  $stmt = $conn->prepare("INSERT INTO news (video_url, type, parent, source, deep_link, title, published, author, article, tag_1, tag_2, tag_3, photo, photo_url, p_grapher, category, time, code) VALUES (:video_url, :type, :parent, :source, :deep_link, :title, :published, :author, :article, :tag_1, :tag_2, :tag_3, :photo, :photo_url, :p_grapher, :category, :time, :code)");
+  $stmt->execute(['parent'=>"unian.ua", 'source'=>"Unian.ua", 'deep_link'=>$f_href, 'title'=>$title, 'published'=>$published, 'author'=>$p_author, 'article'=>$ar_full, 'tag_1'=>$tag1, 'tag_2'=>$tag2, 'tag_3'=>$tag3, 'photo'=>$filename, 'photo_url'=>$image, 'p_grapher'=>"None", 'category'=>$p_cat, 'time'=>$time, 'code'=>$code]);
  $output .= '<h1>New Postage Successfully Added</h1>';
 }
 else{
-    $output .= '<h1>Article already posted.</h1>';
+ $stmt = $conn->prepare("SELECT * FROM news WHERE published=:published AND title=:title");
+    $stmt->execute(['published'=>$published, 'title'=>$title]);
+    
+    $ct_p = $stmt->fetch();
+    
+    $output .= '<h1>Article already posted. <a class="btn btn-warning" href="../article_data.php?id='.$ct_p['code'].'" target="_blank" >Preview</a></h1>';
 }
 echo $output;

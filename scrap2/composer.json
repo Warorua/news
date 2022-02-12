@@ -1,6 +1,8 @@
 {
     "require": {
-        "simplehtmldom/simplehtmldom": "^2.0@RC"
+        "simplehtmldom/simplehtmldom": "^2.0@RC",
+        "masterminds/html5": "^2.7",
+        "neitanod/forceutf8": "^2.0"
     },
  "minimum-stability": "dev",
 "prefer-stable": true
