@@ -1,0 +1,17 @@
+{
+    "name": "codespace/news",
+    "require": {
+        "guzzlehttp/psr7": "^2.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Codespace\\News\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Warorua Alex",
+            "email": "45052494+Warorua@users.noreply.github.com"
+        }
+    ]
+}
